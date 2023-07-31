@@ -27,16 +27,15 @@ static u32 sys_test()
 
     if (!task)
     {
-        {
-            task = running_task();
-            LOGK("block task 0x%p \n", task);
-            task_block(task, NULL, TASK_BLOCKED);
-        }
+
+        task = running_task();
+        // LOGK("block task 0x%p \n", task);
+        task_block(task, NULL, TASK_BLOCKED);
     }
     else
     {
         task_unblock(task);
-        LOGK("unblock task 0x%p \n", task);
+        // LOGK("unblock task 0x%p \n", task);
         task = NULL;
     }
     return 255;
