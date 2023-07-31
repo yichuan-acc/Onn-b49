@@ -2,6 +2,7 @@
 #define ONIX_TASK_H
 
 #include <onix/types.h>
+#include <onix/list.h>
 
 #define KERNEL_USER 0
 #define NORMAL_USER 1
@@ -28,7 +29,9 @@ typedef enum task_state_t
 // 任务的状态信息
 typedef struct task_t
 {
-    u32 *stack;               // 内核栈
+    u32 *stack; // 内核栈
+
+    list_node_t node;         // 任务阻塞节点
     task_state_t state;       // 任务状态
     u32 priority;             // 任务优先级
     u32 ticks;                // 剩余时间片
@@ -57,5 +60,8 @@ void schedule();
 // void task_init();
 
 void test_yield();
+
+void task_block(task_t *task, list_t *blist, task_state_t state);
+void task_unblock(task_t *task);
 
 #endif

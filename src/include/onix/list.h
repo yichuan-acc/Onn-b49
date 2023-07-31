@@ -55,5 +55,5 @@ u32 list_size(list_t *list);
 
 // 链表插入排序
 // void list_insert_sort(list_t *list, list_node_t *node, int offset);
-void list_test();
+// void list_test();
 #endif

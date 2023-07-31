@@ -126,6 +126,57 @@ void test_intr_45()
     LOGK("%d\n", get_interrupt_state());
 }
 
+void test_list()
+{
+    u32 count = 3;
+    list_t holder;
+    list_t *list = &holder;
+    list_init(list);
+    list_node_t *node;
+
+    while (count--)
+    {
+        // 分配页表 ，返回的是一个32位的地址就可以
+        //  抽象为 链表节点
+        node = (list_node_t *)alloc_kpage(1);
+
+        // 只要把地址push到链表中即可
+        list_push(list, node);
+    }
+
+    while (!list_empty(list))
+    {
+        node = list_pop(list);
+        free_kpage((u32)node, 1);
+    }
+
+    count = 3;
+    while (count--)
+    {
+        /* code */
+        node = (list_node_t *)alloc_kpage(1);
+        list_pushback(list, node);
+    }
+
+    LOGK("list size %d\n", list_size(list));
+
+    while (!list_empty(list))
+    {
+        /* code */
+        node = list_popback(list);
+        free_kpage((u32)node, 1);
+    }
+
+    node = (list_node_t *)alloc_kpage(1);
+    list_pushback(list, node);
+
+    LOGK("search node 0x%p --> %d\n", node, list_search(list, node));
+    LOGK("search node 0x%p --> %d\n", 0, list_search(list, 0));
+
+    list_remove(node);
+    free_kpage((u32)node, 1);
+}
+
 void kernel_init()
 {
     memory_map_init();
@@ -145,9 +196,9 @@ void kernel_init()
     task_init();
     syscall_init();
 
-    list_test();
+    // test_list();
 
-    // set_interrupt_state(true);
+    set_interrupt_state(true);
     // asm volatile("sti");
     // hang();
 }

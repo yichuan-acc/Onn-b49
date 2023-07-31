@@ -2,6 +2,7 @@
 #include <onix/assert.h>
 #include <onix/debug.h>
 #include <onix/syscall.h>
+#include <onix/task.h>
 
 #define LOGK(fmt, args...) DEBUGK(fmt, ##args)
 
@@ -18,6 +19,27 @@ void syscall_check(u32 nr)
     }
 }
 
+task_t *task = NULL;
+static u32 sys_test()
+{
+    //
+    if (!task)
+    {
+        {
+            task = running_task();
+            LOGK("block task 0x%p \n", task);
+            task_block(task, NULL, TASK_BLOCKED);
+        }
+    }
+    else
+    {
+        task_unblock(task);
+        LOGK("unblock task 0x%p \n", task);
+        task = NULL;
+    }
+    return 255;
+}
+
 //
 static void sys_default()
 {
@@ -25,7 +47,7 @@ static void sys_default()
     panic("syscall not implemented!!!");
 }
 
-static u32 sys_test()
+static u32 sys_default_test()
 {
     LOGK("syscall test...\n");
     return 255;

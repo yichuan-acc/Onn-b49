@@ -8,6 +8,8 @@
         "*.s": "c",
         "*.def": "c",
         "bitmap.h": "c",
-        "list.h": "c"
+        "list.h": "c",
+        "task.h": "c",
+        "types.h": "c"
     }
 }

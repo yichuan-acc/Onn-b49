@@ -7,11 +7,14 @@
 #include <onix/string.h>
 #include <onix/bitmap.h>
 #include <onix/syscall.h>
+#include <onix/list.h>
 
 extern bitmap_t kernel_map;
 extern void task_switch(task_t *next);
 
 #define NR_TASKS 64
+static task_t *task_table[NR_TASKS]; // 任务表
+static list_t block_list;            // 任务默认阻塞链表
 
 // 所有任务的数组 task_table
 static task_t *task_table[NR_TASKS];
@@ -168,7 +171,8 @@ u32 thread_a()
     {
         printk("A");
         // schedule();
-        yield();
+        // yield();
+        test();
     }
 }
 
@@ -180,7 +184,8 @@ u32 thread_b()
     {
         printk("B");
         // schedule();
-        yield();
+        // yield();
+        test();
     } // 使用while 方法，函数退出有其他的方法。
 }
 u32 thread_c()
@@ -191,16 +196,57 @@ u32 thread_c()
     {
         printk("C");
         // schedule();
-        yield();
+        // yield();
+        test();
     }
 }
 
 void task_init()
 {
+    list_init(&block_list);
+
     task_setup();
 
     // 内核用户的3个线程
     task_create(thread_a, "a", 5, KERNEL_USER);
     task_create(thread_b, "b", 5, KERNEL_USER);
     task_create(thread_c, "c", 5, KERNEL_USER);
+}
+
+// 任务阻塞
+void task_block(task_t *task, list_t *blist, task_state_t state)
+{
+    assert(!get_interrupt_state());
+    assert(task->node.next == NULL);
+    assert(task->node.prev == NULL);
+
+    if (blist == NULL)
+    {
+        blist = &block_list;
+    }
+
+    list_push(blist, &task->node);
+    assert(state != TASK_READY && state != TASK_RUNNING);
+
+    task->state = state;
+
+    task_t *current = running_task();
+    if (current == task)
+    {
+        schedule();
+    }
+}
+
+// 解除任务阻塞
+void task_unblock(task_t *task)
+{
+    assert(!get_interrupt_state());
+
+    // 移除task
+    list_remove(&task->node);
+
+    assert(task->node.next == NULL);
+    assert(task->node.prev == NULL);
+
+    task->state = TASK_READY;
 }
