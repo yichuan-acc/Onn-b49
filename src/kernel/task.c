@@ -13,11 +13,8 @@ extern bitmap_t kernel_map;
 extern void task_switch(task_t *next);
 
 #define NR_TASKS 64
-static task_t *task_table[NR_TASKS]; // 任务表
+static task_t *task_table[NR_TASKS]; // 任务表，所有任务的数组 task_table
 static list_t block_list;            // 任务默认阻塞链表
-
-// 所有任务的数组 task_table
-static task_t *task_table[NR_TASKS];
 
 // 从 task_table 里获得一个空闲的任务
 static task_t *get_free_task()
@@ -58,6 +55,45 @@ static task_t *task_search(task_state_t state)
     }
 
     return task;
+}
+
+// 任务阻塞
+void task_block(task_t *task, list_t *blist, task_state_t state)
+{
+    assert(!get_interrupt_state());
+    assert(task->node.next == NULL);
+    assert(task->node.prev == NULL);
+
+    if (blist == NULL)
+    {
+        blist = &block_list;
+    }
+
+    list_push(blist, &task->node);
+
+    assert(state != TASK_READY && state != TASK_RUNNING);
+
+    task->state = state;
+
+    task_t *current = running_task();
+    if (current == task)
+    {
+        schedule();
+    }
+}
+
+// 解除任务阻塞
+void task_unblock(task_t *task)
+{
+    assert(!get_interrupt_state());
+
+    // 移除task
+    list_remove(&task->node);
+
+    assert(task->node.next == NULL);
+    assert(task->node.prev == NULL);
+
+    task->state = TASK_READY;
 }
 
 void task_yield()
@@ -211,42 +247,4 @@ void task_init()
     task_create(thread_a, "a", 5, KERNEL_USER);
     task_create(thread_b, "b", 5, KERNEL_USER);
     task_create(thread_c, "c", 5, KERNEL_USER);
-}
-
-// 任务阻塞
-void task_block(task_t *task, list_t *blist, task_state_t state)
-{
-    assert(!get_interrupt_state());
-    assert(task->node.next == NULL);
-    assert(task->node.prev == NULL);
-
-    if (blist == NULL)
-    {
-        blist = &block_list;
-    }
-
-    list_push(blist, &task->node);
-    assert(state != TASK_READY && state != TASK_RUNNING);
-
-    task->state = state;
-
-    task_t *current = running_task();
-    if (current == task)
-    {
-        schedule();
-    }
-}
-
-// 解除任务阻塞
-void task_unblock(task_t *task)
-{
-    assert(!get_interrupt_state());
-
-    // 移除task
-    list_remove(&task->node);
-
-    assert(task->node.next == NULL);
-    assert(task->node.prev == NULL);
-
-    task->state = TASK_READY;
 }

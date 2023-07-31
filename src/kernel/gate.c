@@ -20,9 +20,11 @@ void syscall_check(u32 nr)
 }
 
 task_t *task = NULL;
+
 static u32 sys_test()
 {
-    //
+    // LOGK("syscall test...\n");
+
     if (!task)
     {
         {
@@ -40,20 +42,14 @@ static u32 sys_test()
     return 255;
 }
 
+extern void task_yield();
+
 //
 static void sys_default()
 {
     // 系统调用没有实现
     panic("syscall not implemented!!!");
 }
-
-static u32 sys_default_test()
-{
-    LOGK("syscall test...\n");
-    return 255;
-}
-
-extern void task_yield();
 
 //
 void syscall_init()

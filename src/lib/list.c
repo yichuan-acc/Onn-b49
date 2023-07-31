@@ -118,8 +118,3 @@ u32 list_size(list_t *list)
     }
     return size;
 }
-
-#include <onix/memory.h>
-#include <onix/debug.h>
-
-#define LOGK(fmt, args...) DEBUGK(fmt, ##args)
