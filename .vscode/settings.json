@@ -6,6 +6,8 @@
         "assert.h": "c",
         "system_error": "c",
         "*.s": "c",
-        "*.def": "c"
+        "*.def": "c",
+        "bitmap.h": "c",
+        "list.h": "c"
     }
 }

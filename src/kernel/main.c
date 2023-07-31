@@ -14,6 +14,7 @@
 #include <onix/rtc.h>
 #include <onix/memory.h>
 #include <onix/bitmap.h>
+#include <onix/list.h>
 
 extern void console_init();
 extern void gdt_init();
@@ -144,7 +145,9 @@ void kernel_init()
     task_init();
     syscall_init();
 
-    set_interrupt_state(true);
+    list_test();
+
+    // set_interrupt_state(true);
     // asm volatile("sti");
     // hang();
 }
